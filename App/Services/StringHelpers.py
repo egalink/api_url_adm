@@ -1,11 +1,9 @@
-import re
 import validators
 from bson.objectid import ObjectId
 from urllib.parse import urlparse
 
 def validate_url (value):
-    regexp = re.compile("^((http|https)://)[-a-zA-Z0-9@:%._\\+~#?&//=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%._\\+~#?&//=]*)$")
-    return regexp.match(value) is not None and validators.url(value) is True
+    return validators.url(value) is True
 
 def objectid2str (object_id):
     if isinstance(object_id, ObjectId):

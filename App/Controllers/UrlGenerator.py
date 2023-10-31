@@ -1,5 +1,5 @@
 from flask import request, jsonify
-from flask_restful import Resource, reqparse
+from flask_restful import Resource, reqparse, inputs
 from App.Services.StringHelpers import validate_url
 from App.Schemas.Url import Url
 
@@ -10,32 +10,34 @@ class UrlGeneratorLS (Resource):
         self._domain_name = request.url_root.strip("/")
 
     def get (self):
-        data_list = []
-        for item in Url().find_many():
-            data_list.append({
-                'uid': item['uid'],
-                'url': item['url'],
-                #'created_at': item['created_at'].strftime("%Y-%m-%d %H:%M:%S")
+
+        documents = []
+
+        for doc in Url().find_many({}):
+            documents.append({
+                'uid': doc['uid'],
+                'url': doc['url'],
+                'clicks': doc['clicks'],
+                'active': bool(doc['active']),
+                'shortened_url': f"{self._domain_name}/u/{doc['uid']}",
+                'expires_in': int(doc['expires_at'].total_seconds()) if doc['expires_at'] else 0,
+                'created_at': doc['created_at'].strftime("%Y-%m-%d %H:%M:%S"),
             })
 
-        return jsonify(data_list)
+        return jsonify(documents)
 
     def post (self):
         parser = reqparse.RequestParser()
-        parser.add_argument('url', required=True, type=str, help="Por favor, proporciona una URL válida.")
+        parser.add_argument('url', required=True, type=inputs.url, help="Por favor, proporciona una URL válida.")
         payload = parser.parse_args()
-
-        # validate if the url param is present in payload:
-        if 'url' in payload and len(payload.url) < 8:
-            return { 'failure': 'Proporciona una URL.' }, 400
 
         # validate if the provided url is a correct one:
         if validate_url(payload.url) is False:
             return { 'failure': 'La URL no es válida.' }, 400
 
-        _id = Url().save_url(payload.url)
+        uid = Url().save_url(payload.url)
 
-        return { 'success': f'{_id}' }, 201
+        return { 'success': f'{uid}' }, 201
     
 class UrlGeneratorWP (Resource):
 
