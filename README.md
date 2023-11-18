@@ -31,5 +31,5 @@ An url shortener microservice written on python using flask framework.
 
 ### Minimum Requirements:
 
-1. Python >= 3
+1. Python = 3.8.18
 2. Mongo DB >= 4 

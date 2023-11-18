@@ -1,29 +1,18 @@
-# Use the official base image provided by Python
-# FROM python:3.7-slim
+FROM python:3.8-slim
 
-# Set the working directory in the container to /app
-# WORKDIR /app
+RUN apt-get clean \
+    && apt-get -y update
 
-# Copy the current directory contents into the container at /app
-# ADD . /app
+RUN apt-get -y install nginx \
+    && apt-get -y install python3-dev \
+    && apt-get -y install build-essential
 
-# Install any needed packages specified in requirements.txt
-# RUN pip install --trusted-host pypi.python.org -r requirements.txt
-
-# Make port 80 available to the world outside this container
-# EXPOSE 80
-
-# Define environment variable
-# ENV NAME World
-
-# Run app.py when the container launches
-# CMD ["python", "app.py"]
-
-
-FROM python:3.7-slim
 WORKDIR /app
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
-EXPOSE 8080
-CMD ["python", "start.py"]
+
+RUN pip install uwsgi
+RUN pip install --no-cache-dir -r ./requirements.txt --src /usr/local/src
+
+COPY nginx.conf /etc/nginx
+RUN chmod +x ./start.sh
+CMD ["./start.sh"]

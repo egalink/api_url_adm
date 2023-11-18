@@ -14,9 +14,24 @@ class MongoDbClientSingleton:
         return cls._instance
 
     def __init__ (self):
+
         host = os.environ.get('MONGODB_HOST', '127.0.0.1')
         port = os.environ.get('MONGODB_PORT', 27017)
-        self._dbclient = MongoClient(f"mongodb://{host}:{port}/")
+        user = os.environ.get('MONGODB_USER', '')
+        pswd = os.environ.get('MONGODB_PASSWORD', '')
+        conn = ""
+
+        if user is not None and bool(user):
+            conn += user
+        
+        if pswd is not None and bool(pswd):
+            conn += ':'
+            conn += pswd
+        
+        if conn is not None and bool(conn):
+            conn += '@'
+
+        self._dbclient = MongoClient(f"mongodb://{conn}{host}:{port}/")
 
     def get_client (self):
         return self._dbclient
@@ -27,6 +42,9 @@ class MongoDb:
 
     def __init__ (self):
         self._client = MongoDbClientSingleton().get_client()
+
+    def get_client (self):
+        return self._client
 
     def db (self, db_name='public'):
         self._db = self._client[db_name]
