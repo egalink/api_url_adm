@@ -1,5 +1,5 @@
 import nanoid
-from datetime import datetime
+from datetime import datetime, timezone
 from App.Database.MongoSchema import MongoSchema
 
 class Url (MongoSchema):
@@ -11,6 +11,11 @@ class Url (MongoSchema):
 
     def save_url (self, url, expires_at=None, active=True):
 
+        # expiration date must be on UTC to calculate
+        # expiration from any local time:
+        if (expires_at is not None):
+            expires_at = datetime.fromtimestamp(expires_at.timestamp(), tz=timezone.utc)
+
         uid = nanoid.generate(size=9)
         _id = self.insert_one({
             'url': url,
@@ -18,7 +23,7 @@ class Url (MongoSchema):
             'clicks': 0,
             'active': active,
             'expires_at': expires_at,
-            'created_at': datetime.utcnow(),
+            'created_at': datetime.now(), # this is only a representative date.
         }).inserted_id
 
         return uid
