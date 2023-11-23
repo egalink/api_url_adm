@@ -31,7 +31,7 @@ class MongoDbClientSingleton:
         if conn is not None and bool(conn):
             conn += '@'
 
-        self._dbclient = MongoClient(f"mongodb://{conn}{host}:{port}/")
+        self._dbclient = MongoClient(f"mongodb://{conn}{host}:{port}/", serverSelectionTimeoutMS=5000)
 
     def get_client (self):
         return self._dbclient
