@@ -1,4 +1,5 @@
 from flask import jsonify
+from flask_jwt_extended import create_access_token
 from App.Controllers.UrlGenerator import UrlGeneratorLS, UrlGeneratorWP
 
 def resources (api):
@@ -9,6 +10,8 @@ def routing (app, api):
 
     @app.route('/')
     def say_hello():
+        access_token = create_access_token(identity="cfeaeeabcf746207d81aaaa2a2832ead06f340686a4c005fdf17e22c8ca1b020")
+        return jsonify(access_token=access_token)
         return { 'success': 'Una simple api para recortar tus URL\'s de la WEB.' }, 200
 
     @app.errorhandler(404)

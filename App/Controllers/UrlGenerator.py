@@ -1,5 +1,6 @@
 from flask import request, jsonify, current_app as app
 from flask_restful import Resource, reqparse, inputs
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from App.Services.StringHelpers import validate_url
 from App.Schemas.Url import Url
 from datetime import datetime, timedelta
@@ -36,17 +37,22 @@ class UrlGeneratorLS (Resource):
     def __init__ (self) -> None:
         super().__init__()
         self._domain_name = request.url_root.strip("/")
-
+    
+    @jwt_required()
     def get (self):
+
+        #current_user = get_jwt_identity()
+        #return { current_user: current_user }, 200
 
         documents = []
 
         for doc in Url().find_many({}):
             documents.append(UrlResponseGenerator(self._domain_name, doc).parse())
 
-        app.logger.error('Requesting all registered urls.')
+        #app.logger.info('Requesting all registered urls.')
         return jsonify(documents)
 
+    @jwt_required()
     def post (self):
         parser = reqparse.RequestParser()
         parser.add_argument('url', required=True, type=inputs.url, help="Por favor, proporciona una URL válida.")
@@ -70,6 +76,7 @@ class UrlGeneratorWP (Resource):
         super().__init__()
         self._domain_name = request.url_root.strip("/")
 
+    @jwt_required()
     def get (self, uid):
         document = Url().find_one({ 'uid': uid })
         try:
@@ -80,6 +87,7 @@ class UrlGeneratorWP (Resource):
 
         return UrlResponseGenerator(self._domain_name, document).parse(), 200
 
+    @jwt_required()
     def delete (self, uid):
         try:
             Url().delete_one({ 'uid': uid })
