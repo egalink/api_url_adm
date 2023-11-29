@@ -1,4 +1,4 @@
-from flask import request, jsonify
+from flask import request, jsonify, current_app as app
 from flask_restful import Resource, reqparse, inputs
 from App.Services.StringHelpers import validate_url
 from App.Schemas.Url import Url
@@ -44,6 +44,7 @@ class UrlGeneratorLS (Resource):
         for doc in Url().find_many({}):
             documents.append(UrlResponseGenerator(self._domain_name, doc).parse())
 
+        app.logger.error('Requesting all registered urls.')
         return jsonify(documents)
 
     def post (self):
@@ -61,7 +62,8 @@ class UrlGeneratorLS (Resource):
         return {
             'success': f'{uid}'
         }, 201
-    
+
+
 class UrlGeneratorWP (Resource):
 
     def __init__ (self) -> None:

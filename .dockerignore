@@ -1,0 +1,10 @@
+.git
+.gitignore
+.env.*
+*.log
+
+Dockerfile
+__pycache__
+build/
+liftstaging.sh
+venv/
