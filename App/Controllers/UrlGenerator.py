@@ -69,7 +69,14 @@ class UrlGeneratorWP (Resource):
         self._domain_name = request.url_root.strip("/")
 
     def get (self, uid):
-        return UrlResponseGenerator(self._domain_name, Url().find_one({ 'uid': uid })).parse(), 200
+        document = Url().find_one({ 'uid': uid })
+        try:
+            if (document is None):
+                raise ValueError('No se encontró el uid proporcionado.')
+        except ValueError as e:
+            return { 'failure': str(e) }, 404
+
+        return UrlResponseGenerator(self._domain_name, document).parse(), 200
 
     def delete (self, uid):
         try:
