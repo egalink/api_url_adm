@@ -23,8 +23,8 @@ fi
 
 MICROSERVICE="api_url_adm"
 
-docker rm $MICROSERVICE --force
 docker build --tag $MICROSERVICE:latest .
 docker image prune -f
+docker rm $MICROSERVICE --force
 docker run -t -d --name $MICROSERVICE --publish 8081:80 --network urlshortener $MICROSERVICE:latest
 

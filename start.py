@@ -3,7 +3,6 @@ from flask import Flask
 from flask_restful import Api
 from App.Services.HealthCheck import HealthCheck
 from App.routing import routing
-import logging
 import os
 
 # Read key-value pairs from a .env file and
@@ -13,9 +12,6 @@ load_dotenv()
 env = os.environ.get('APP_ENV', 'development')
 app = Flask(__name__)
 api = Api(app)
-
-if ('production' == env):
-    logging.basicConfig(filename="app.log", level=logging.DEBUG)
 
 # implementing a basic health-check service:
 HealthCheck(app)
