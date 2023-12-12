@@ -15,7 +15,17 @@ def routing (app, api):
         return { 'success': 'Una simple api para recortar tus URL\'s de la WEB.' }, 200
 
     @app.errorhandler(404)
-    def not_found(error):
-        return jsonify({ 'failure': 'Not found.' }), 404
+    def not_found_error(error):
+        return jsonify({ 'failure': 'not found', 'message': error.description }), 404
 
+    #@app.errorhandler(500)
+    #def internal_server_error(error):
+    #    return jsonify({'error': 'internal server error', 'message': error.description}), 500
+
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        response = jsonify({'failure': e.__class__.__name__, 'message': str(e)})
+        response.status_code = 500
+        return response
+    
     resources(api)

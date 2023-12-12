@@ -16,6 +16,7 @@ app = Flask(__name__)
 api = Api(app)
 
 # setup the Flask-JWT-Extended extension:
+app.config['JWT_ALGORITHM'] = 'HS256'
 app.config["JWT_SECRET_KEY"] = os.environ.get("APP_KEY", "")
 app.config["JWT_ERROR_MESSAGE_KEY"] = "failure"
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = datetime.timedelta(minutes=120) # 2 hours
