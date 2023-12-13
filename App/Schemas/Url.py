@@ -9,7 +9,7 @@ class Url (MongoSchema):
     def __init__ (self):
         super().__init__(self)
 
-    def save_url (self, url, expires_at=None, active=True):
+    def save_url (self, user_id, url, expires_at=None, active=True):
 
         # expiration date must be on UTC to calculate
         # expiration from any local time:
@@ -22,6 +22,7 @@ class Url (MongoSchema):
             'uid': uid,
             'clicks': 0,
             'active': active,
+            'user_id': user_id,
             'expires_at': expires_at,
             'created_at': datetime.now(), # this is only a representative date.
         }).inserted_id

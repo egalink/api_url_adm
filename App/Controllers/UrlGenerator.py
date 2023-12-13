@@ -3,6 +3,8 @@ from flask_restful import Resource, reqparse, inputs
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from App.Services.StringHelpers import validate_url
 from App.Schemas.Url import Url
+from App.Schemas.User import User
+from App.Services.StringHelpers import str2objectid
 from datetime import datetime, timedelta
 
 class UrlResponseGenerator:
@@ -41,19 +43,33 @@ class UrlGeneratorLS (Resource):
     @jwt_required()
     def get (self):
 
-        #current_user = get_jwt_identity()
-        #return { current_user: current_user }, 200
+        user_id = get_jwt_identity()
+        profile = User().find_one({ '_id': str2objectid(user_id) })
 
-        documents = []
+        if (profile is None):
+            return {
+                "error": "No se encontró el usuario solicitado.",
+            }, 404
 
-        for doc in Url().find_many({}):
-            documents.append(UrlResponseGenerator(self._domain_name, doc).parse())
+        urllist = []
+
+        for url in Url().find_many({ 'user_id': profile['_id'] }):
+            urllist.append(UrlResponseGenerator(self._domain_name, url).parse())
 
         #app.logger.info('Requesting all registered urls.')
-        return jsonify(documents)
+        return jsonify(urllist)
 
     @jwt_required()
     def post (self):
+
+        user_id = get_jwt_identity()
+        profile = User().find_one({ '_id': str2objectid(user_id) })
+
+        if (profile is None):
+            return {
+                "error": "No se encontró el usuario solicitado.",
+            }, 404
+
         parser = reqparse.RequestParser()
         parser.add_argument('url', required=True, type=inputs.url, help="Por favor, proporciona una URL válida.")
         parser.add_argument('expiration', required=False, type=inputs.datetime_from_iso8601, help="Por favor, proporciona una fecha de expiración válida.")
@@ -61,12 +77,14 @@ class UrlGeneratorLS (Resource):
 
         # validate if the provided url is a correct one:
         if validate_url(payload.url) is False:
-            return { 'failure': 'La URL no es válida.' }, 400
+            return {
+                "error": "La URL no es válida.",
+            }, 400
 
-        uid = Url().save_url(payload.url, payload.expiration)
+        uid = Url().save_url(profile['_id'], payload.url, payload.expiration)
 
         return {
-            'success': f'{uid}'
+            "uid": f"{uid}"
         }, 201
 
 
@@ -78,20 +96,45 @@ class UrlGeneratorWP (Resource):
 
     @jwt_required()
     def get (self, uid):
-        document = Url().find_one({ 'uid': uid })
-        try:
-            if (document is None):
-                raise ValueError('No se encontró el uid proporcionado.')
-        except ValueError as e:
-            return { 'failure': str(e) }, 404
 
-        return UrlResponseGenerator(self._domain_name, document).parse(), 200
+        user_id = get_jwt_identity()
+        profile = User().find_one({ '_id': str2objectid(user_id) })
+
+        if (profile is None):
+            return {
+                "error": "No se encontró el usuario solicitado.",
+            }, 404
+
+        url = Url().find_one({ 'uid': uid, 'user_id': profile['_id'] })
+        
+        if (url is None):
+            return {
+                "error": "No se encontró el usuario solicitado.",
+            }, 404
+
+        return UrlResponseGenerator(self._domain_name, url).parse(), 200
 
     @jwt_required()
     def delete (self, uid):
-        try:
-            Url().delete_one({ 'uid': uid })
-        except Exception as e:
-            return { 'failure': str(e) }, 500
 
-        return { 'success': uid }, 200
+        user_id = get_jwt_identity()
+        profile = User().find_one({ '_id': str2objectid(user_id) })
+
+        if (profile is None):
+            return {
+                "error": "No se encontró el usuario solicitado.",
+            }, 404
+
+        try:
+            
+            Url().delete_one({
+                'uid'       : uid,
+                'user_id'   : profile['_id']
+            })
+
+        except Exception as e:
+            return {
+                'error': str(e)
+            }, 500
+
+        return { 'uid': uid }, 200
