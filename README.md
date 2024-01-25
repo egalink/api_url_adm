@@ -1,4 +1,4 @@
-# URLSHORTENER
+# API_URL_ADM
 
 An url shortener microservice written on python using flask framework.
 
@@ -10,7 +10,7 @@ An url shortener microservice written on python using flask framework.
  
     **Linux:**
     ```
-    1. cd urlshortener/
+    1. cd api_url_adm/
     2. python3 -m venv venv
     ```
 
