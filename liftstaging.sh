@@ -6,6 +6,8 @@ NETW_NAME="urlshortener" # replace this with your network name
 docker pull mongo:jammy
 docker network create $NETW_NAME
 docker run -d --network $NETW_NAME \
+    -v ~/Docker/mongodb:/etc/mongo \
+    -p 27017:27017 \
 	-e MONGO_INITDB_ROOT_USERNAME=urlshortener \
 	-e MONGO_INITDB_ROOT_PASSWORD=supersecrets \
     --name $IPV4_FROM mongo:jammy
